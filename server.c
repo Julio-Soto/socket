@@ -1,5 +1,3 @@
-/* A simple server in the internet domain using TCP */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,6 +99,8 @@ int main(void){
 			recvbuf = (char *) calloc(128,sizeof(char));
 
 			while(!auth){
+
+				
 				numbytes = recv(new_fd,recvbuf,128,0);
 				if(numbytes < 0){
 					perror("recv");
@@ -120,11 +120,15 @@ int main(void){
 
 				for (int i = 0; i < usertable.size() ; ++i){
 					strcpy(temp,(usertable[i].name).c_str());
-					if(strcmp(username, temp) == 0){
-						
+					if(strcmp(username, temp) == 0){  ////////////// name match
+				
+				if(send(new_fd, "goodname", numbytes, 0) == -1){
+					perror("send");
+					close(new_fd);
+					exit(1);					
+				}
 
-
-						numbytes = recv(new_fd,recvbuf,128,0);
+				numbytes = recv(new_fd,recvbuf,128,0);
 				if(numbytes < 0){
 					perror("recv");
 					close(new_fd);
@@ -137,23 +141,26 @@ int main(void){
 				}
 
 				printf("Received from %s: %s\n",inet_ntoa(their_addr.sin_addr),recvbuf);
-				if(send(new_fd, recvbuf, numbytes, 0) == -1){
-					perror("send");
-					close(new_fd);
-					exit(1);					
-				}
+				
 
 				strcpy(password,recvbuf);
 				printf("password: %s\n",password);
 				strcpy(temp,(usertable[i].password).c_str());
 				if(strcmp(password, temp) == 0){
-						
-						auth = 1;
-						printf("gained entry \n");
-						}
-					}//if name
-				  }//usertable iteration for
-				}//while auth
+					if(send(new_fd, "goodpass", numbytes, 0) == -1){
+						perror("send");
+						close(new_fd);
+						exit(1);					
+					}
+
+					auth = 1;
+					printf("gained entry \n");
+				    }//if pass
+				   }//if name			
+				}//usertable iteration for
+
+				
+			}//while auth
 
 			for(;;){
 				printf("in main accept loop \n");

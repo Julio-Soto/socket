@@ -58,21 +58,24 @@ int main(int argc, char *argv[])
 	printf("Welcome to the eShedule Server!!!!\n");
 
 	while(!loggedin){
-		cout << "login as: ";
-        	cin >> username;
+		strcpy(msg,"badname");
+		while(strcmp(msg,"badname") == 0){
+			cout << "login as: ";
+	        cin >> username;
 
-		strcpy(sendbuf,username);
-		if((numbytes=send(sockfd, sendbuf, sizeof(sendbuf),0)) == -1){
-	  		perror("send");
-	  		close(sockfd);
-	  		exit(1);
-	  	}
+			strcpy(sendbuf,username);
+			if((numbytes=send(sockfd, sendbuf, sizeof(sendbuf),0)) == -1){
+		  		perror("send");
+		  		close(sockfd);
+		  		exit(1);
+		  	}
 
-	  	if((numbytes=recv(sockfd, buf, 127, 0)) == -1){
-	  		perror("recv");
-	  		exit(1);
-	  	}
-
+		  	if((numbytes=recv(sockfd, buf, 127, 0)) == -1){
+		  		perror("recv");
+		  		exit(1);
+		  	}
+		  	strcpy(msg,buf);
+		}
 
 		cout << "password: ";
 		cin >> password;
@@ -89,10 +92,11 @@ int main(int argc, char *argv[])
 	  		exit(1);
 	  	}
 
-	  	cin.clear();
-		fflush(stdin);
-		strcpy(sendbuf,"");
-		loggedin = true;
+	  	strcpy(msg,buf);
+	  	if(strcmp(msg,"goodpass") == 0){
+			loggedin = true;
+			printf("access granted!\n");
+		}
 	}
 
 	for(;;){
@@ -131,4 +135,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
