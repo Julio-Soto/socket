@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
@@ -11,13 +12,22 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <vector>
+
 
 #define MYPORT 6869
 #define BACKLOG 10
 
+using namespace std;
+
 void sigchld_handler(int s){
 	while(wait(NULL) > 0);
 }
+
+struct user{
+        string name;
+        string password;
+    };
 
 int main(void){
 	int sockfd, new_fd;
@@ -29,9 +39,21 @@ int main(void){
 	char *recvbuf;
 	char *caddr;
 	int numbytes;
-	char username[20];
-	char password[20];
+	char username[100];
+	char password[100];
 	bool auth = 0;
+	char temp[100];
+	vector<user> usertable;
+
+    	usertable.push_back(user());
+    	usertable[0].name = 	"julio";
+   	usertable[0].password = "secret";
+    	usertable.push_back(user());
+    	usertable[1].name = 	"userino";
+    	usertable[1].password = "word";
+    	usertable.push_back(user());
+    	usertable[2].name = 	"guest";
+    	usertable[2].password = "pass";
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("socket");
@@ -99,11 +121,15 @@ int main(void){
 				}
 				strcpy(username,recvbuf);
 				printf("user: %s\n",username);
-				if(strcmp(username, "myuser") == 0){
-					auth = 1;
-					printf("gained entry \n");
-				}
-			}
+
+				for (int i = 0; i < usertable.size() ; ++i){
+					strcpy(temp,(usertable[i].name).c_str());
+					if(strcmp(username, temp) == 0){
+						auth = 1;
+						printf("gained entry \n");
+					}
+				  }
+				}//while auth
 			
 
 			for(;;){
