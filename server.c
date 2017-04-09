@@ -29,6 +29,9 @@ int main(void){
 	char *recvbuf;
 	char *caddr;
 	int numbytes;
+	char username[20];
+	char password[20];
+	bool auth = 0;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("socket");
@@ -74,7 +77,37 @@ int main(void){
 		if(!fork()) {
 			close(sockfd);
 			recvbuf = (char *) calloc(128,sizeof(char));
+
+			while(!auth){
+				numbytes = recv(new_fd,recvbuf,128,0);
+				if(numbytes < 0){
+					perror("recv");
+					close(new_fd);
+					exit(1);
+				}
+				else if(numbytes == 0 || strncmp(recvbuf,"bye",3) == 0) {
+					printf("client(%s) has been disconnected \n", (char *) inet_ntoa(their_addr.sin_addr));
+					close(new_fd);
+					exit(0);	
+				}
+
+				printf("Received from %s: %s\n",inet_ntoa(their_addr.sin_addr),recvbuf);
+				if(send(new_fd, recvbuf, numbytes, 0) == -1){
+					perror("send");
+					close(new_fd);
+					exit(1);					
+				}
+				strcpy(username,recvbuf);
+				printf("user: %s\n",username);
+				if(strcmp(username, "myuser") == 0){
+					auth = 1;
+					printf("gained entry \n");
+				}
+			}
+			
+
 			for(;;){
+				printf("in main accept loop \n");
 				numbytes = recv(new_fd,recvbuf,128,0);
 				if(numbytes < 0){
 					perror("recv");
