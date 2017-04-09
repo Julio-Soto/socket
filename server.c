@@ -114,23 +114,46 @@ int main(void){
 				}
 
 				printf("Received from %s: %s\n",inet_ntoa(their_addr.sin_addr),recvbuf);
-				if(send(new_fd, recvbuf, numbytes, 0) == -1){
-					perror("send");
-					close(new_fd);
-					exit(1);					
-				}
+				
 				strcpy(username,recvbuf);
 				printf("user: %s\n",username);
 
 				for (int i = 0; i < usertable.size() ; ++i){
 					strcpy(temp,(usertable[i].name).c_str());
 					if(strcmp(username, temp) == 0){
+						
+
+
+						numbytes = recv(new_fd,recvbuf,128,0);
+				if(numbytes < 0){
+					perror("recv");
+					close(new_fd);
+					exit(1);
+				}
+				else if(numbytes == 0 || strncmp(recvbuf,"bye",3) == 0) {
+					printf("client(%s) has been disconnected \n", (char *) inet_ntoa(their_addr.sin_addr));
+					close(new_fd);
+					exit(0);	
+				}
+
+				printf("Received from %s: %s\n",inet_ntoa(their_addr.sin_addr),recvbuf);
+				if(send(new_fd, recvbuf, numbytes, 0) == -1){
+					perror("send");
+					close(new_fd);
+					exit(1);					
+				}
+
+				strcpy(password,recvbuf);
+				printf("password: %s\n",password);
+				strcpy(temp,(usertable[i].password).c_str());
+				if(strcmp(password, temp) == 0){
+						
 						auth = 1;
 						printf("gained entry \n");
-					}
-				  }
+						}
+					}//if name
+				  }//usertable iteration for
 				}//while auth
-			
 
 			for(;;){
 				printf("in main accept loop \n");
@@ -162,22 +185,3 @@ int main(void){
 	}
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
